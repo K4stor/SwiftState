@@ -48,6 +48,8 @@ public class Machine<S: StateType, E: EventType>
 
     internal var _state: S
 
+    public lazy var parent: Machine<S, E>? = nil
+
     //--------------------------------------------------
     // MARK: - Init
     //--------------------------------------------------
@@ -209,6 +211,9 @@ public class Machine<S: StateType, E: EventType>
 
             return true
         }
+        else if let parent = parent {
+            return parent.tryEvent(event, userInfo: userInfo)
+        }
         else {
             for handlerInfo in self._errorHandlers {
                 let toState = self.state    // NOTE: there's no `toState` for failure of event-based-transition
@@ -218,7 +223,7 @@ public class Machine<S: StateType, E: EventType>
             return false
         }
     }
-
+    
     private func _validHandlerInfos(event: E, fromState: S, toState: S) -> [_HandlerInfo<S, E>]
     {
         let validHandlerInfos = [ self._handlers[.some(event)], self._handlers[.any] ]
